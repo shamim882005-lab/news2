@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS • futuristic news</title>
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    /* --------------------------------------------- */
+    /* RESET & GLOBAL VARIABLES (premium dark base) */
+    /* --------------------------------------------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    :root {
+      --bg: #0b0c10;
+      --surface: #151820;
+      --glass: rgba(25, 30, 40, 0.5);
+      --glass-border: rgba(255, 255, 255, 0.05);
+      --primary: #00e0ff;
+      --primary-glow: rgba(0, 224, 255, 0.4);
+      --text: #eef4ff;
+      --text-dim: #a0a8c0;
+      --card-bg: #1e2330;
+      --shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8);
+      --gradient-1: linear-gradient(145deg, #1f2a3f, #121725);
+      --gradient-card: linear-gradient(135deg, rgba(40, 50, 70, 0.6), rgba(20, 25, 35, 0.9));
+      --header-blur: blur(16px);
+      --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    body.light {
+      --bg: #f0f4fa;
+      --surface: #ffffff;
+      --glass: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(0, 0, 0, 0.1);
+      --primary: #0066ff;
+      --primary-glow: rgba(0, 102, 255, 0.3);
+      --text: #121826;
+      --text-dim: #2f3a4b;
+      --card-bg: #ffffff;
+      --shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.15);
+      --gradient-1: linear-gradient(145deg, #eef2f9, #d9e2ef);
+      --gradient-card: linear-gradient(135deg, #ffffff, #f5f9ff);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.4s, color 0.3s;
+      line-height: 1.6;
+      scroll-behavior: smooth;
+    }
+
+    /* custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 8px; box-shadow: inset 0 0 8px var(--primary-glow); }
+
+    /* skeleton animation */
+    .skeleton {
+      background: linear-gradient(90deg, #222a36 25%, #2c3444 50%, #222a36 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.8s infinite;
+      border-radius: 12px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* glassmorphism + utilities */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: var(--header-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 32px;
+      box-shadow: 0 15px 35px -10px rgba(0,0,0,0.3);
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 30px; }
+
+    /* NAVBAR sticky + animated */
+    .navbar {
+      position: sticky; top: 20px; z-index: 999;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 40px; margin: 0 20px; border-radius: 80px;
+      background: var(--glass); backdrop-filter: var(--header-blur);
+      border: 1px solid var(--glass-border); box-shadow: var(--shadow);
+      transition: transform 0.3s, background 0.3s;
+    }
+    .navbar.scrolled { transform: scale(0.98); background: rgba(15, 20, 30, 0.9); }
+    body.light .navbar.scrolled { background: rgba(255, 255, 255, 0.8); }
+
+    .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; background: linear-gradient(120deg, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 40px; }
+    .nav-links a { color: var(--text); text-decoration: none; font-weight: 500; transition: 0.2s; border-bottom: 2px solid transparent; padding-bottom: 4px; }
+    .nav-links a:hover { border-bottom-color: var(--primary); color: var(--primary); }
+
+    .theme-toggle { background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; width: 48px; height: 48px; border-radius: 50%; backdrop-filter: blur(4px); background: var(--glass); transition: var(--transition); }
+    .theme-toggle:hover { background: var(--primary); color: #0b0c10; }
+
+    /* hero slider (parallax effect) */
+    .hero {
+      margin: 40px 20px 60px; border-radius: 48px; overflow: hidden; position: relative; height: 70vh; min-height: 600px;
+      background: var(--gradient-1); box-shadow: var(--shadow);
+    }
+    .hero-slide { position: absolute; inset: 0; display: flex; align-items: center; padding: 80px; background-size: cover; background-position: center; transition: opacity 0.8s; opacity: 0; }
+    .hero-slide.active { opacity: 1; z-index: 2; }
+    .hero-slide::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,20,30,0.8) 0%, transparent 80%); }
+    .hero-content { position: relative; z-index: 3; max-width: 650px; transform: translateY(30px); animation: rise 0.9s forwards; }
+    @keyframes rise { to { transform: translateY(0); } }
+    .hero-category { color: var(--primary); text-transform: uppercase; letter-spacing: 4px; font-size: 0.9rem; }
+    .hero-title { font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.1; margin: 15px 0; }
+    .hero-cta { background: var(--primary); color: #000; border: none; padding: 16px 40px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 0 20px var(--primary-glow); }
+
+    /* progress bar */
+    .scroll-progress { position: fixed; top: 0; left: 0; height: 4px; background: linear-gradient(90deg, var(--primary), #a020f0); width: 0%; z-index: 9999; transition: width 0.05s; }
+
+    /* sections */
+    .section-title { font-size: 2.2rem; margin: 60px 0 30px; display: flex; align-items: center; gap: 15px; }
+    .section-title span { background: var(--primary); width: 8px; height: 40px; border-radius: 8px; }
+
+    /* cards grid */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
+    .article-card {
+      background: var(--gradient-card); border-radius: 32px; padding: 20px; backdrop-filter: blur(8px); border: 1px solid var(--glass-border); box-shadow: var(--shadow); transition: var(--transition); cursor: pointer;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .article-card:hover { transform: translateY(-12px) scale(1.02); box-shadow: 0 40px 60px -10px var(--primary-glow), 0 0 0 1px var(--primary); }
+    .card-img { width: 100%; height: 180px; border-radius: 24px; background: #2a3344; object-fit: cover; }
+    .card-cat { color: var(--primary); font-size: 0.8rem; text-transform: uppercase; }
+    .card-title { font-size: 1.4rem; font-weight: 600; }
+
+    /* live search */
+    .search-bar { display: flex; gap: 10px; max-width: 400px; margin: 20px 0; }
+    .search-bar input { flex: 1; background: var(--surface); border: 1px solid var(--glass-border); border-radius: 60px; padding: 15px 20px; color: var(--text); font-size: 1rem; }
+    .search-bar button { background: var(--primary); border: none; border-radius: 60px; width: 60px; color: black; font-size: 1.4rem; cursor: pointer; }
+
+    /* article page (hidden by default) */
+    .page { display: none; animation: fade 0.4s; }
+    .page.active-page { display: block; }
+    @keyframes fade { from { opacity: 0.3; } to { opacity: 1; } }
+
+    .full-article { max-width: 900px; margin: 40px auto; background: var(--gradient-card); border-radius: 48px; padding: 50px; box-shadow: var(--shadow); }
+    .meta { display: flex; gap: 20px; color: var(--text-dim); margin: 20px 0; }
+    .share-buttons i { font-size: 1.8rem; margin-right: 20px; color: var(--text-dim); transition: 0.2s; }
+    .share-buttons i:hover { color: var(--primary); transform: scale(1.1); }
+
+    /* form admin */
+    .article-form { background: var(--glass); border-radius: 48px; padding: 40px; max-width: 700px; margin: 40px auto; display: grid; gap: 20px; backdrop-filter: blur(10px); }
+    .article-form input, .article-form textarea, .article-form select { background: var(--surface); border: 1px solid var(--glass-border); border-radius: 30px; padding: 16px 24px; color: var(--text); }
+    .preview-btn, .publish-btn { background: var(--primary); border: none; padding: 16px; border-radius: 40px; font-weight: bold; cursor: pointer; }
+
+    /* bookmark, back to top, footer */
+    .bookmark-btn { background: none; border: 2px solid var(--primary); border-radius: 30px; padding: 8px 20px; color: var(--primary); cursor: pointer; }
+    .back-to-top { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); border: none; font-size: 2rem; cursor: pointer; opacity: 0; transition: 0.2s; pointer-events: none; z-index: 999; }
+    .back-to-top.visible { opacity: 1; pointer-events: all; }
+
+    footer { margin-top: 100px; background: var(--surface); border-radius: 60px 60px 0 0; padding: 60px 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 40px; }
+
+    /* loading screen */
+    #loading-screen { position: fixed; inset:0; background: var(--bg); z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s; }
+    .loader { width: 80px; height: 80px; border: 6px solid var(--primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s infinite; }
+
+    /* 404 */
+    .not-found-page { text-align: center; padding: 150px 20px; }
+    .not-found-page h1 { font-size: 8rem; text-shadow: 0 0 30px var(--primary); }
+
+    /* responsive */
+    @media (max-width: 800px) { .navbar { flex-direction: column; gap: 15px; } .nav-links { flex-wrap: wrap; justify-content: center; } }
+  </style>
+</head>
+<body>
+  <!-- loading screen -->
+  <div id="loading-screen"><div class="loader"></div></div>
+
+  <!-- scroll progress -->
+  <div class="scroll-progress" id="progressBar"></div>
+
+  <!-- back to top -->
+  <button class="back-to-top" id="backToTop">↑</button>
+
+  <!-- sticky navbar -->
+  <nav class="navbar glass" id="navbar">
+    <div class="logo">NEXUS</div>
+    <div class="nav-links">
+      <a href="#" data-page="home">Home</a>
+      <a href="#" data-page="about">About</a>
+      <a href="#" data-page="post">Post article</a>
+      <a href="#" data-page="bookmarks">Bookmarks</a>
+    </div>
+    <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+  </nav>
+
+  <!-- search bar (visible on home) -->
+  <div class="container" id="searchContainer" style="margin-top: 20px;">
+    <div class="search-bar glass">
+      <input type="text" id="searchInput" placeholder="Live search articles...">
+      <button><i class="fas fa-search"></i></button>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <main>
+    <!-- HOME page (default visible) -->
+    <section id="home" class="page active-page">
+      <!-- hero slider -->
+      <div class="hero" id="heroSlider">
+        <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1495020689067-958852a7765e?w=1400');">
+          <div class="hero-content"><span class="hero-category">World</span><h1 class="hero-title">Global climate summit reaches historic deal</h1><button class="hero-cta">Read more</button></div>
+        </div>
+        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=1400');">
+          <div class="hero-content"><span class="hero-category">Tech</span><h1 class="hero-title">Nexus AI: the future of generative interfaces</h1><button class="hero-cta">Read more</button></div>
+        </div>
+        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1400');">
+          <div class="hero-content"><span class="hero-category">Education</span><h1 class="hero-title">Global literacy rate hits all‑time high</h1><button class="hero-cta">Read more</button></div>
+        </div>
+      </div>
+
+      <!-- Trending & latest sections with skeleton loading simulation (we fill via JS) -->
+      <div class="container">
+        <div class="section-title"><span></span><h2>🔥 Trending now</h2></div>
+        <div class="card-grid" id="trendingGrid"></div>
+
+        <div class="section-title"><span></span><h2>📰 Latest articles</h2></div>
+        <div class="card-grid" id="latestGrid"></div>
+
+        <div class="section-title"><span></span><h2>🌍 World</h2></div>
+        <div class="card-grid" id="worldGrid"></div>
+        <!-- more categories can be added, using same data -->
+      </div>
+    </section>
+
+    <!-- ARTICLE full page (single view) -->
+    <section id="articlePage" class="page">
+      <div class="full-article glass" id="fullArticleContainer"></div>
+      <div class="container"><h3>Related articles</h3><div class="card-grid" id="relatedGrid"></div></div>
+      <!-- simple comment frontend -->
+      <div class="container" style="margin-top: 40px;"><div class="glass" style="padding:30px;"><h3>Comments</h3><textarea placeholder="demo comment (ui only)" rows="3" style="width:100%; background:var(--surface); border-radius:20px; padding:20px;"></textarea><button style="background:var(--primary); border:none; padding:10px 30px; border-radius:30px; margin-top:10px;">Post</button></div></div>
+    </section>
+
+    <!-- Post article admin page -->
+    <section id="post" class="page">
+      <div class="container" style="max-width: 800px;">
+        <h2 style="margin:40px 0">📝 Publish new article</h2>
+        <div class="article-form glass">
+          <input type="text" id="titleInput" placeholder="Title">
+          <select id="categorySelect"><option value="Technology">Technology</option><option value="World">World</option><option value="Education">Education</option></select>
+          <input type="text" id="imageInput" placeholder="Image URL (unsplash demo)">
+          <textarea id="descInput" placeholder="Short description" rows="2"></textarea>
+          <textarea id="contentInput" placeholder="Full article content ..." rows="6"></textarea>
+          <button class="preview-btn" id="previewArticleBtn">👀 Live preview</button>
+          <button class="publish-btn" id="publishArticleBtn">🚀 Publish (localStorage)</button>
+        </div>
+        <div id="livePreviewArea" class="glass" style="margin:30px 0; padding:30px; display:none;"></div>
+        <div id="adminArticlesList" style="margin:40px 0;"><h3>Your articles (edit/delete)</h3><div class="card-grid" id="userArticlesGrid"></div></div>
+      </div>
+    </section>
+
+    <!-- About page with author card -->
+    <section id="about" class="page">
+      <div class="container" style="padding:60px 0">
+        <div class="glass" style="padding:50px; border-radius:60px; display:flex; flex-wrap:wrap; gap:40px; align-items:center;">
+          <img src="https://randomuser.me/api/portraits/women/44.jpg" style="width:180px; border-radius:50%; border:4px solid var(--primary);">
+          <div><h1>Alex Rivera</h1><p style="color:var(--primary);">Senior editor & futurist</p><p>Crafting narratives at the intersection of technology and humanity. Previously at Wired, now leading Nexus.</p><div style="font-size:2rem; margin-top:20px;"><i class="fab fa-twitter"></i> <i class="fab fa-linkedin"></i> <i class="fab fa-github"></i></div></div>
+        </div>
+        <!-- contact ui only -->
+        <div class="glass" style="margin-top:60px; padding:40px;"><h3>Contact (demo UI)</h3><input placeholder="Name" style="width:100%; margin:10px 0; background:var(--surface); padding:15px;"><br><textarea placeholder="Message" style="width:100%; background:var(--surface); padding:15px;"></textarea><button style="background:var(--primary); border:none; padding:15px 30px; border-radius:40px;">Send</button></div>
+      </div>
+    </section>
+
+    <!-- Bookmarks page -->
+    <section id="bookmarks" class="page">
+      <div class="container"><h2>⭐ Bookmarked articles</h2><div class="card-grid" id="bookmarkGrid"></div></div>
+    </section>
+
+    <!-- custom 404 page (hidden) -->
+    <section id="notFound404" class="page not-found-page"><h1>404</h1><p>lost in space</p><a href="#" data-page="home">return home</a></section>
+  </main>
+
+  <!-- animated footer -->
+  <footer class="glass">
+    <div><h3>NEXUS</h3><p>futuristic news & ideas</p></div>
+    <div><h4>Sections</h4><p>Tech · World · Education</p></div>
+    <div><h4>Social</h4><i class="fab fa-twitter"></i> <i class="fab fa-instagram"></i> <i class="fab fa-linkedin"></i></div>
+    <div><h4>Subscribe</h4><div style="display:flex;"><input placeholder="email" style="background:var(--surface); border:none; padding:10px; border-radius:40px 0 0 40px;"><button style="background:var(--primary); border:none; padding:0 20px; border-radius:0 40px 40px 0;">→</button></div></div>
+  </footer>
+
+  <script>
+    (function() {
+      // ----- DATA & LOCALSTORAGE -----
+      let articles = JSON.parse(localStorage.getItem('nexusArticles')) || [];
+      let bookmarks = JSON.parse(localStorage.getItem('nexusBookmarks')) || [];
+
+      // default dummy samples (premium content)
+      const defaultArticles = [
+        { id: 'a1', title: 'Quantum computing leaps forward', category: 'Technology', image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600', description: 'New processor beats classical supercomputers.', content: 'full content...', author: 'Elena Chen', date: '2025-03-01', readTime: 4 },
+        { id: 'a2', title: 'Peace talks progress in Geneva', category: 'World', image: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600', description: 'Diplomatic sources report optimism.', content: 'details...', author: 'James Oka', date: '2025-03-02', readTime: 6 },
+        { id: 'a3', title: 'New AI curriculum for schools', category: 'Education', image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600', description: '16 countries adopt AI literacy.', content: '...', author: 'Sofia Grace', date: '2025-03-03', readTime: 3 },
+      ];
+      if (articles.length === 0) { articles = defaultArticles; localStorage.setItem('nexusArticles', JSON.stringify(articles)); }
+
+      // ----- HELPERS: render cards (used everywhere) -----
+      function renderCardGrid(gridId, filterCategory = null, limit = 10) {
+        let arr = articles;
+        if (filterCategory) arr = arr.filter(a => a.category === filterCategory);
+        arr = arr.slice(0, limit);
+        const grid = document.getElementById(gridId);
+        if (!grid) return '';
+        grid.innerHTML = arr.map(a => `
+          <div class="article-card" data-id="${a.id}">
+            <img src="${a.image}" class="card-img" loading="lazy" onerror="this.src='https://via.placeholder.com/400x200?text=news'">
+            <div class="card-cat">${a.category}</div>
+            <div class="card-title">${a.title}</div>
+            <p style="color:var(--text-dim)">${a.description.substring(0,60)}…</p>
+            <div style="display:flex; justify-content:space-between; margin-top:8px;">
+              <span>📖 ${a.readTime || 2} min</span>
+              <button class="bookmark-btn" data-id="${a.id}"><i class="fa-${bookmarks.includes(a.id)?'solid':'regular'} fa-bookmark"></i></button>
+            </div>
+          </div>`).join('');
+        // attach click on card to open article
+        grid.querySelectorAll('.article-card').forEach(card => card.addEventListener('click', (e) => {
+          if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+          const id = card.dataset.id; showFullArticle(id); setActivePage('articlePage');
+        }));
+        // bookmark buttons
+        grid.querySelectorAll('.bookmark-btn').forEach(btn => btn.addEventListener('click', (e) => {
+          e.stopPropagation(); const id = btn.dataset.id;
+          if (bookmarks.includes(id)) { bookmarks = bookmarks.filter(b => b !== id); } else { bookmarks.push(id); }
+          localStorage.setItem('nexusBookmarks', JSON.stringify(bookmarks)); renderAll();
+        }));
+      }
+
+      function showFullArticle(id) {
+        const art = articles.find(a => a.id === id);
+        if (!art) return;
+        const container = document.getElementById('fullArticleContainer');
+        container.innerHTML = `
+          <h1 style="font-size:3rem;">${art.title}</h1>
+          <div class="meta"><span>${art.author || 'Nexus'} • ${art.date || '2025'}</span><span>📚 ${art.readTime || 3} min read</span></div>
+          <img src="${art.image}" style="width:100%; border-radius:40px; margin:20px 0; max-height:400px; object-fit:cover;">
+          <p style="font-size:1.3rem;">${art.content || art.description}</p>
+          <div class="share-buttons"><i class="fab fa-facebook"></i><i class="fab fa-twitter"></i><i class="fab fa-whatsapp"></i></div>
+        `;
+        // related (excluding current)
+        const related = articles.filter(a => a.category === art.category && a.id !== id).slice(0,3);
+        document.getElementById('relatedGrid').innerHTML = related.map(a => `<div class="article-card" data-id="${a.id}"><img src="${a.image}" class="card-img"><div class="card-title">${a.title}</div></div>`).join('');
+      }
+
+      // live search
+      document.getElementById('searchInput').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const filtered = articles.filter(a => a.title.toLowerCase().includes(term) || a.description.toLowerCase().includes(term));
+        document.getElementById('latestGrid').innerHTML = filtered.map(a => `<div class="article-card" data-id="${a.id}"><img src="${a.image}" class="card-img"><div class="card-cat">${a.category}</div><div class="card-title">${a.title}</div></div>`).join('');
+      });
+
+      // nav / page switching
+      document.querySelectorAll('[data-page]').forEach(link => link.addEventListener('click', (e) => {
+        e.preventDefault(); const pageId = link.dataset.page; setActivePage(pageId);
+      }));
+
+      function setActivePage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+        if (pageId === 'home') document.getElementById('home').classList.add('active-page');
+        else if (pageId === 'articlePage') document.getElementById('articlePage').classList.add('active-page');
+        else if (pageId === 'post') document.getElementById('post').classList.add('active-page');
+        else if (pageId === 'about') document.getElementById('about').classList.add('active-page');
+        else if (pageId === 'bookmarks') { document.getElementById('bookmarks').classList.add('active-page'); showBookmarks(); }
+        else document.getElementById('notFound404').classList.add('active-page');
+      }
+
+      function showBookmarks() {
+        const bmArts = articles.filter(a => bookmarks.includes(a.id));
+        document.getElementById('bookmarkGrid').innerHTML = bmArts.map(a => `<div class="article-card"><img src="${a.image}" class="card-img"><div class="card-title">${a.title}</div></div>`).join('');
+      }
+
+      // publishing new article
+      document.getElementById('publishArticleBtn').addEventListener('click', () => {
+        const newArt = {
+          id: Date.now()+'',
+          title: document.getElementById('titleInput').value,
+          category: document.getElementById('categorySelect').value,
+          image: document.getElementById('imageInput').value || 'https://images.unsplash.com/photo-1504711434967-e33886168f5c?w=600',
+          description: document.getElementById('descInput').value,
+          content: document.getElementById('contentInput').value,
+          author: 'You',
+          date: new Date().toISOString().slice(0,10),
+          readTime: Math.ceil(document.getElementById('contentInput').value.length / 500) || 2
+        };
+        if (!newArt.title) return alert('title required');
+        articles.push(newArt); localStorage.setItem('nexusArticles', JSON.stringify(articles)); renderAll();
+      });
+
+      function renderAll() {
+        renderCardGrid('trendingGrid', null, 3);
+        renderCardGrid('latestGrid', null, 4);
+        renderCardGrid('worldGrid', 'World', 3);
+        if (document.getElementById('userArticlesGrid')) {
+          const userArticles = articles.filter(a => a.author === 'You');
+          document.getElementById('userArticlesGrid').innerHTML = userArticles.map(a => `<div class="article-card" data-id="${a.id}"><div class="card-title">${a.title}</div><button class="bookmark-btn" onclick="deleteArticle('${a.id}')">🗑️ delete</button></div>`).join('');
+        }
+      }
+      window.deleteArticle = (id) => { articles = articles.filter(a => a.id !== id); localStorage.setItem('nexusArticles', JSON.stringify(articles)); renderAll(); };
+
+      // theme toggle
+      document.getElementById('themeToggle').addEventListener('click', () => { document.body.classList.toggle('light'); updateThemeIcon(); });
+      function updateThemeIcon() { document.querySelector('#themeToggle i').className = document.body.classList.contains('light')? 'fas fa-sun' : 'fas fa-moon'; }
+
+      // progress + back to top + loading hide
+      window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        document.getElementById('progressBar').style.width = (winScroll/height)*100 + '%';
+        document.getElementById('backToTop').classList.toggle('visible', winScroll > 300);
+      });
+      document.getElementById('backToTop').addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
+      window.addEventListener('load', () => { document.getElementById('loading-screen').style.opacity='0'; setTimeout(()=>{document.getElementById('loading-screen').style.display='none';},900); });
+
+      // navbar shrink
+      window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY>20); });
+
+      // hero slider auto
+      let slideIndex = 0;
+      setInterval(() => { let slides = document.querySelectorAll('.hero-slide'); slides.forEach(s=>s.classList.remove('active')); slideIndex = (slideIndex+1)%slides.length; slides[slideIndex]?.classList.add('active'); }, 5000);
+
+      // initial renders
+      renderAll();
+    })();
+  </script>
+  <!-- simple dummy delete global function -->
+  <script>function deleteArticle(id) { window.deleteArticle(id); }</script>
+  <style> .article-card { cursor: pointer; } </style>
+</body>
+</html>
